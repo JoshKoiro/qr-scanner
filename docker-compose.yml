@@ -2,13 +2,16 @@ version: '3'
 
 services:
   qr-scanner:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    image: my-custom-qr-scanner:latest
+    container_name: my-qr-scanner-container
     ports:
-      - "8080:80"
+      - "8080:3000"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/"]
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
       interval: 30s
       timeout: 3s
       retries: 3
-

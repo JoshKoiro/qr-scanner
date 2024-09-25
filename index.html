@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Scanner Demo</title>
+    <title>QR Scanner with Immediate Redirect</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -42,22 +42,6 @@
             font-size: 14px;
             text-align: center;
         }
-        #qr-overlay a {
-            color: #4CAF50;
-            text-decoration: none;
-        }
-        #qr-result {
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        #qr-result-link {
-            word-break: break-all;
-        }
-        .hidden {
-            display: none;
-        }
         .button-group {
             display: flex;
             justify-content: center;
@@ -77,11 +61,8 @@
         button:hover {
             background-color: #45a049;
         }
-        #open-link-button {
-            background-color: #008CBA;
-        }
-        #open-link-button:hover {
-            background-color: #007B9E;
+        .hidden {
+            display: none;
         }
     </style>
 </head>
@@ -91,8 +72,7 @@
         <div id="video-container">
             <video id="qr-video"></video>
             <div id="qr-overlay" class="hidden">
-                <p id="overlay-text"></p>
-                <button id="overlay-open-link-button" class="hidden">Open Link</button>
+                <span id="overlay-text"></span>
             </div>
         </div>
         <div class="button-group">
@@ -109,23 +89,19 @@
         const stopButton = document.getElementById('stop-button');
         const qrOverlay = document.getElementById('qr-overlay');
         const overlayText = document.getElementById('overlay-text');
-        const overlayOpenLinkButton = document.getElementById('overlay-open-link-button');
-
-        let lastScannedUrl = null;
 
         function setResult(result) {
-            lastScannedUrl = result.data;
+            const scannedData = result.data;
             
-            if (lastScannedUrl.startsWith('http')) {
-                overlayText.innerHTML = `Link detected: <a href="${lastScannedUrl}" target="_blank">${lastScannedUrl}</a>`;
-                overlayOpenLinkButton.classList.remove('hidden');
-                overlayOpenLinkButton.onclick = () => window.open(lastScannedUrl, '_blank');
+            if (scannedData.startsWith('http')) {
+                // Immediate redirect for URLs
+                window.location.href = scannedData;
             } else {
-                overlayText.textContent = `Scanned: ${lastScannedUrl}`;
-                overlayOpenLinkButton.classList.add('hidden');
+                // For non-URL data, just display it briefly
+                overlayText.textContent = `Scanned: ${scannedData}`;
+                qrOverlay.classList.remove('hidden');
+                setTimeout(() => qrOverlay.classList.add('hidden'), 2000); // Hide after 2 seconds
             }
-            
-            qrOverlay.classList.remove('hidden');
         }
 
         const scanner = new QrScanner(video, result => setResult(result), {

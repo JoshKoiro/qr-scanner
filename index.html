@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Scanner with Immediate Redirect</title>
+    <title>QR Scanner with Persistent Last Scan</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -61,9 +61,6 @@
         button:hover {
             background-color: #45a049;
         }
-        .hidden {
-            display: none;
-        }
     </style>
 </head>
 <body>
@@ -71,7 +68,7 @@
         <h1>QR Code Scanner</h1>
         <div id="video-container">
             <video id="qr-video"></video>
-            <div id="qr-overlay" class="hidden">
+            <div id="qr-overlay">
                 <span id="overlay-text"></span>
             </div>
         </div>
@@ -90,23 +87,32 @@
         const qrOverlay = document.getElementById('qr-overlay');
         const overlayText = document.getElementById('overlay-text');
 
+        let lastScannedData = '';
+
         function setResult(result) {
             const scannedData = result.data;
             
-            if (scannedData.startsWith('http')) {
-                // Immediate redirect for URLs
-                window.location.href = scannedData;
-            } else {
-                // For non-URL data, just display it briefly
-                overlayText.textContent = `Scanned: ${scannedData}`;
-                qrOverlay.classList.remove('hidden');
-                setTimeout(() => qrOverlay.classList.add('hidden'), 2000); // Hide after 2 seconds
+            // Only update if the scanned data is different from the last scan
+            if (scannedData !== lastScannedData) {
+                lastScannedData = scannedData;
+                
+                if (scannedData.startsWith('http')) {
+                    // Show the URL briefly before redirecting
+                    overlayText.textContent = `Redirecting to: ${scannedData}`;
+                    setTimeout(() => {
+                        window.location.href = scannedData;
+                    }, 0); // Short delay for visibility
+                } else {
+                    // For non-URL data, just display it
+                    overlayText.textContent = `Scanned: ${scannedData}`;
+                }
             }
         }
 
         const scanner = new QrScanner(video, result => setResult(result), {
             highlightScanRegion: true,
             highlightCodeOutline: true,
+            maxScansPerSecond: 3, // Limit scan rate to reduce flickering
         });
 
         startButton.addEventListener('click', () => {
@@ -115,7 +121,6 @@
 
         stopButton.addEventListener('click', () => {
             scanner.stop();
-            qrOverlay.classList.add('hidden');
         });
 
         // Start scanner initially

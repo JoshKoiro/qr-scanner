@@ -14,6 +14,7 @@ RUN npm install
 COPY server.js .
 COPY index.html .
 COPY qr-scanner.min.js .
+COPY qr-scanner-worker.min.js .
 
 # Expose port 3000
 EXPOSE 3000
